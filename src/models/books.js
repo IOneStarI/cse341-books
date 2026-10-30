@@ -9,4 +9,11 @@ const getAllBooks = async () => {
     .toArray();
 };
 
-export { getAllBooks };
+const getBookById = async (bookId) => {
+  return await getDb().collection('books').findOne(
+    { id: bookId },
+    { projection: { _id: 0, id: 1, author: 1, title: 1, publicationDate: 1 } }
+  );
+};
+
+export { getAllBooks, getBookById };
