@@ -187,6 +187,8 @@ Public book fields:
 
 Seed authors before changing books. Preserve each existing book's id, title, and publication date. Map Maya Rivera → a1, Noah Chen → a2, Ava Morgan → a3. Set `authorId`, then remove the legacy `author` field. Check all book references before marking migration complete. Keep reproducible seed data; migration must not overwrite later user edits or delete unrelated documents when rerun.
 
+Deployment uses two stages: run `npm run migrate:books -- --keep-author` before deploying the updated book code, retaining the name field so Week 1 reads still work. After the new code is deployed, run `npm run migrate:books` to remove the legacy field. The new API exposes only the reference-based schema in either stage. Existing valid `authorId` values take precedence over old names, preserving later reference edits.
+
 ### Routes and responses
 
 | Route | Success | Expected errors |

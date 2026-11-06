@@ -34,12 +34,23 @@ const options = {
         },
         Book: {
           type: 'object',
-          required: ['id', 'author', 'title', 'publicationDate'],
+          additionalProperties: false,
+          required: ['id', 'authorId', 'title', 'publicationDate'],
           properties: {
-            id: { type: 'string', example: 'b1' },
-            author: { type: 'string', example: 'Maya Rivera' },
-            title: { type: 'string', example: 'Patterns of Light' },
-            publicationDate: { type: 'string', format: 'date', example: '2021-08-17' }
+            id: { type: 'string', minLength: 1, maxLength: 64, pattern: '^[A-Za-z0-9_-]+$', example: 'b1' },
+            authorId: { type: 'string', minLength: 1, maxLength: 64, pattern: '^[A-Za-z0-9_-]+$', description: 'Custom id of an existing author.', example: 'a1' },
+            title: { type: 'string', minLength: 1, maxLength: 200, example: 'Patterns of Light' },
+            publicationDate: { type: 'string', format: 'date', description: 'Real calendar date in YYYY-MM-DD, years 0001 through 9999.', example: '2021-08-17' }
+          }
+        },
+        BookUpdate: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['authorId', 'title', 'publicationDate'],
+          properties: {
+            authorId: { $ref: '#/components/schemas/Book/properties/authorId' },
+            title: { $ref: '#/components/schemas/Book/properties/title' },
+            publicationDate: { $ref: '#/components/schemas/Book/properties/publicationDate' }
           }
         },
         Error: {
@@ -49,6 +60,23 @@ const options = {
         }
       },
       responses: {
+        BookNotFound: {
+          description: 'No book matches the custom id.',
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' }, example: { message: 'Book not found' } } }
+        },
+        InvalidBook: {
+          description: 'Invalid book data, malformed JSON, or an authorId that does not exist.',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+              examples: {
+                invalid: { value: { message: 'Invalid book data' } },
+                authorMissing: { value: { message: 'Author does not exist' } },
+                malformed: { value: { message: 'Invalid request body' } }
+              }
+            }
+          }
+        },
         AuthorNotFound: {
           description: 'No author matches the custom id.',
           content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' }, example: { message: 'Author not found' } } }
