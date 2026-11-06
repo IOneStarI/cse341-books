@@ -9,9 +9,17 @@ const connectToDb = async () => {
   }
 
   const client = new MongoClient(connectionString);
-  await client.connect();
-  database = client.db(process.env.MONGODB_DB_NAME || 'cse341-books-db');
-  return database;
+  try {
+    await client.connect();
+    const connectedDatabase = client.db(process.env.MONGODB_DB_NAME || 'cse341-books-db');
+    await connectedDatabase.collection('authors').createIndex({ id: 1 }, { unique: true });
+    await connectedDatabase.collection('books').createIndex({ authorId: 1 });
+    database = connectedDatabase;
+    return database;
+  } catch (error) {
+    await client.close();
+    throw error;
+  }
 };
 
 const getDb = () => {

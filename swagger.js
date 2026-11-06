@@ -13,6 +13,25 @@ const options = {
     servers: [{ url: '/', description: 'Current server' }],
     components: {
       schemas: {
+        Author: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['id', 'name', 'birthYear'],
+          properties: {
+            id: { type: 'string', minLength: 1, maxLength: 64, pattern: '^[A-Za-z0-9_-]+$', example: 'a1' },
+            name: { type: 'string', minLength: 1, maxLength: 200, example: 'Maya Rivera' },
+            birthYear: { type: 'integer', minimum: 1, description: 'Must not exceed the current UTC year.', example: 1980 }
+          }
+        },
+        AuthorUpdate: {
+          type: 'object',
+          additionalProperties: false,
+          required: ['name', 'birthYear'],
+          properties: {
+            name: { $ref: '#/components/schemas/Author/properties/name' },
+            birthYear: { $ref: '#/components/schemas/Author/properties/birthYear' }
+          }
+        },
         Book: {
           type: 'object',
           required: ['id', 'author', 'title', 'publicationDate'],
@@ -27,6 +46,32 @@ const options = {
           type: 'object',
           required: ['message'],
           properties: { message: { type: 'string' } }
+        }
+      },
+      responses: {
+        AuthorNotFound: {
+          description: 'No author matches the custom id.',
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' }, example: { message: 'Author not found' } } }
+        },
+        InvalidAuthor: {
+          description: 'Missing or invalid data, unexpected fields, or malformed JSON.',
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/Error' },
+              examples: {
+                invalid: { value: { message: 'Invalid author data' } },
+                malformed: { value: { message: 'Invalid request body' } }
+              }
+            }
+          }
+        },
+        ServerError: {
+          description: 'Unexpected server or database error.',
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' }, example: { message: 'Internal server error' } } }
+        },
+        BodyTooLarge: {
+          description: 'JSON body exceeds the 100 KB request limit.',
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/Error' }, example: { message: 'Request body too large' } } }
         }
       }
     }
