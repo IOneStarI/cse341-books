@@ -12,6 +12,7 @@
     "lint:fix": "eslint . --fix",
     "swagger": "node swagger.js",
     "seed:authors": "node --env-file=.env scripts/seed-authors.js",
+    "migrate:books": "node --env-file=.env scripts/migrate-books.js",
     "test": "node --env-file=.env --test"
   },
   "engines": {

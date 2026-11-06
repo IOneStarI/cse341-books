@@ -1,5 +1,7 @@
 import express from 'express';
-import { getBooksHandler, getBookByIdHandler } from './controllers/books.js';
+import {
+  getBooksHandler, getBookByIdHandler, createBookHandler, updateBookHandler, deleteBookHandler
+} from './controllers/books.js';
 import {
   getAuthorsHandler, getAuthorByIdHandler, createAuthorHandler, updateAuthorHandler, deleteAuthorHandler
 } from './controllers/authors.js';
@@ -70,6 +72,123 @@ router.get('/books', getBooksHandler);
  *               message: Internal server error
  */
 router.get('/books/:id', getBookByIdHandler);
+
+/**
+ * @openapi
+ * /books:
+ *   post:
+ *     summary: Create a book
+ *     description: All four fields are required. Strings are trimmed, unknown fields are rejected, and authorId must identify an existing author. Ids are unique and case-sensitive. Publication dates must be real calendar dates.
+ *     tags: [Books]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Book'
+ *           example:
+ *             id: b4
+ *             authorId: a1
+ *             title: Example Book Title
+ *             publicationDate: '2026-01-15'
+ *     responses:
+ *       201:
+ *         description: Book created, with its author reference and no internal MongoDB fields.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Book'
+ *       400:
+ *         description: Invalid data, malformed JSON, duplicate id, or a missing author.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               invalid:
+ *                 value:
+ *                   message: Invalid book data
+ *               duplicate:
+ *                 value:
+ *                   message: Book id already exists
+ *               authorMissing:
+ *                 value:
+ *                   message: Author does not exist
+ *               malformed:
+ *                 value:
+ *                   message: Invalid request body
+ *       413:
+ *         $ref: '#/components/responses/BodyTooLarge'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ */
+router.post('/books', createBookHandler);
+
+/**
+ * @openapi
+ * /books/{id}:
+ *   put:
+ *     summary: Update a book
+ *     description: All three mutable fields are required. The id cannot change or appear in the body. A missing book returns 404 before author lookup; a missing author returns 400. Unchanged valid updates return 200.
+ *     tags: [Books]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: b4
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/BookUpdate'
+ *           example:
+ *             authorId: a2
+ *             title: Updated Book Title
+ *             publicationDate: '2026-02-20'
+ *     responses:
+ *       200:
+ *         description: Updated book, with the original id.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Book'
+ *       400:
+ *         $ref: '#/components/responses/InvalidBook'
+ *       404:
+ *         $ref: '#/components/responses/BookNotFound'
+ *       413:
+ *         $ref: '#/components/responses/BodyTooLarge'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ */
+router.put('/books/:id', updateBookHandler);
+
+/**
+ * @openapi
+ * /books/{id}:
+ *   delete:
+ *     summary: Delete a book
+ *     description: Deletes only the matching book; its author is retained.
+ *     tags: [Books]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         example: b4
+ *     responses:
+ *       204:
+ *         description: Book deleted; response has no body.
+ *       404:
+ *         $ref: '#/components/responses/BookNotFound'
+ *       500:
+ *         $ref: '#/components/responses/ServerError'
+ */
+router.delete('/books/:id', deleteBookHandler);
 
 /**
  * @openapi

@@ -1,6 +1,6 @@
 # Books API
 
-Express and MongoDB API for CSE 341. The current version supports full author CRUD and the existing book read routes. See [the Week 2 specification](./spec-week02.md) for the API contract.
+Express and MongoDB API for CSE 341 with full book and author CRUD. Books reference authors by `authorId`. See [the Week 2 specification](./spec-week02.md) for the API contract.
 
 - Hosted API: https://cse341-books-2k8e.onrender.com
 - Swagger UI: https://cse341-books-2k8e.onrender.com/api-docs/
@@ -22,9 +22,26 @@ npm run seed:authors
 npm run dev
 ```
 
-The author seed inserts missing sample authors and preserves existing records. Startup ensures author ids have a unique index and book author references have an index.
+The author seed inserts missing sample authors and preserves existing records. Startup ensures author and book ids have unique indexes and book author references have an index.
 
 Open http://localhost:3000/api-docs/ to test routes using **Try it out** and **Execute**. Write-route examples use `a4`; choose an unused id and delete your temporary author after testing. Deleting an author referenced by a book returns 409 and preserves both records.
+
+## Migrating Week 1 books
+
+For an existing Week 1 database, first seed missing authors and prepare the references while the old code is still deployed:
+
+```sh
+npm run seed:authors
+npm run migrate:books -- --keep-author
+```
+
+This adds valid `authorId` fields and retains `author` for the old deployment. After deploying this book API, finish the migration:
+
+```sh
+npm run migrate:books
+```
+
+The final step removes legacy author names. Both steps preserve ids, titles, publication dates, existing valid author references, and unrelated records. Reruns do not reset user edits. The migration validates all references before writing; unknown authors stop it for inspection.
 
 ## Checks
 
