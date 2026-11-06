@@ -156,7 +156,8 @@ This version is the implementation contract for both features. Database: `cse341
 
 - API requests and nonempty responses use JSON. Errors have exactly `{ "message": "..." }`; 204 responses have no body.
 - POST and PUT require a JSON object, not null or an array. Missing, malformed, or invalid bodies return 400. Reject fields not listed for that request, including `_id` and `id` on PUT.
-- Trim surrounding whitespace from string inputs before validating and storing. Ids are case-sensitive, 1–64 characters, and contain only ASCII letters, digits, hyphens, or underscores. Route ids remain custom strings; no ObjectId conversion is used.
+- Malformed JSON returns `{ "message": "Invalid request body" }`. Requests exceeding Express's 100 KB JSON body limit return 413 `{ "message": "Request body too large" }`.
+- Trim surrounding whitespace from string body inputs before validating and storing. Ids are case-sensitive, 1–64 characters, and contain only ASCII letters, digits, hyphens, or underscores. Route ids remain custom strings; no ObjectId conversion is used.
 - Titles and names must be nonempty strings of at most 200 characters after trimming.
 - POST requires the id; PUT requires all mutable fields and cannot change the existing id. A PUT sending unchanged valid values still returns 200.
 - List responses are arrays sorted by `id` ascending; an empty collection returns `[]` with 200. Single-resource responses are objects. Exclude `_id` and unspecified database fields from all responses.
